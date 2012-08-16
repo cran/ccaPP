@@ -9,14 +9,12 @@
 #define ARMA_NO_DEBUG
 
 #include <RcppArmadillo.h>
-#include <omp.h>	// OpenMP
 
 using namespace Rcpp;
 using namespace arma;
 using namespace std;
 
 // functions to export to R
-RcppExport SEXP R_getNumProcs();
 RcppExport SEXP R_l1Median(SEXP R_x);					// for testing
 RcppExport SEXP R_fastMedian(SEXP R_x);
 RcppExport SEXP R_fastMAD(SEXP R_x, SEXP R_constant);
