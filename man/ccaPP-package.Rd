@@ -14,8 +14,8 @@ Canonical correlation analysis via projection pursuit and fast
 \tabular{ll}{
 Package: \tab ccaPP\cr
 Type: \tab Package\cr
-Version: \tab 0.1.0\cr
-Date: \tab 2012-08-14\cr
+Version: \tab 0.1.1\cr
+Date: \tab 2012-08-16\cr
 Depends: \tab Rcpp (>= 0.9.10), parallel, pcaPP (>= 1.8-1)\cr
 Imports: \tab RcppArmadillo (>= 0.2.36)\cr
 LinkingTo: \tab Rcpp, RcppArmadillo\cr

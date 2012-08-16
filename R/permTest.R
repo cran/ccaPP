@@ -83,11 +83,12 @@ permTest <- function(x, y, R = 1000, ccaFun = ccaGrid, nCores = 1, cl = NULL,
     }
     R <- rep(as.integer(R), length.out=1)
     if(is.na(R)) R <- formals()$R
-    if(is.na(nCores)) nCores <- getNumProcs()  # use all available cores
+    if(is.na(nCores)) nCores <- detectCores()  # use all available cores
     if(!is.numeric(nCores) || is.infinite(nCores) || nCores < 1) {
         nCores <- 1  # use default value
         warning("invalid value of 'nCores'; using default value")
     } else nCores <- as.integer(nCores)
+    nCores <- min(nCores, R)
     # check whether parallel computing should be used
     haveNCores <- nCores > 1
     haveCl <- !is.null(cl)
@@ -97,12 +98,13 @@ permTest <- function(x, y, R = 1000, ccaFun = ccaGrid, nCores = 1, cl = NULL,
         if(.Platform$OS.type == "windows") {
             cl <- makePSOCKcluster(rep.int("localhost", nCores))
         } else cl <- makeForkCluster(nCores)
+        on.exit(stopCluster(cl))
     }
     # set seed of random number generator
     if(useParallel) {
         # set seed of the random number stream
-        if(is.null(seed)) clusterSetRNGStream(cl)
-        else clusterSetRNGStream(cl, iseed=seed)
+        if(!is.null(seed)) clusterSetRNGStream(cl, iseed=seed)
+        else if(haveNCores) clusterSetRNGStream(cl)
     } else {
         # check or set seed of the random number generator
         if(is.null(seed)) {
@@ -132,7 +134,6 @@ permTest <- function(x, y, R = 1000, ccaFun = ccaGrid, nCores = 1, cl = NULL,
             })
         r0 <- r[1]  # extract maximum correlation with original data
         r <- r[-1]  # remaining elements are the bootstrap replicates
-        if(!haveCl) stopCluster(cl)
     } else {
         # compute maximum correlation with original data
         r0 <- rep(eval(call)$cor, length.out=1)

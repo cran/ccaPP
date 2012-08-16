@@ -58,9 +58,6 @@ getCorControl <- function(method, control) {
     out
 }
 
-## get the number of processor cores
-getNumProcs <- function() .Call("R_getNumProcs", PACKAGE="ccaPP")
-
 ## L1 median (for testing)
 l1Median <- function(x) {
     # initializations

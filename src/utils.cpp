@@ -14,15 +14,6 @@ using namespace std;
 // C++ isnan() is not portable and gives error on Windows systems
 // use R macro ISNAN() instead
 
-// -----------------------------
-// get number of processor cores
-// -----------------------------
-
-// get the number of processor cores
-SEXP R_getNumProcs() {
-	return wrap(omp_get_num_procs());
-}
-
 // --------------
 // median and MAD
 // --------------
