@@ -1,23 +1,15 @@
-\name{ccaProj}
-\alias{ccaProj}
-\alias{CCAproj}
-\title{(Robust) CCA via projections through the data points}
+\name{maxCorProj}
+\alias{maxCorProj}
+\title{(Robust) maximum correlation via projections through the data points}
 \usage{
-  ccaProj(x, y, k = 1,
+  maxCorProj(x, y,
     method = c("spearman", "kendall", "quadrant", "M", "pearson"),
     control = list(...), useL1Median = TRUE,
     fallback = FALSE, ...)
-
-  CCAproj(x, y, k = 1,
-    method = c("spearman", "kendall", "quadrant", "M", "pearson"),
-    useL1Median = TRUE, fallback = FALSE, ...)
 }
 \arguments{
   \item{x,y}{each can be a numeric vector, matrix or data
   frame.}
-
-  \item{k}{an integer giving the number of canonical
-  variables to compute.}
 
   \item{method}{a character string specifying the
   correlation functional to maximize.  Possible values are
@@ -52,30 +44,25 @@
   deviation.}
 
   \item{\dots}{additional arguments to be passed to the
-  specified correlation functional.  Currently, this is
-  only relevant for the M-estimator.  For Spearman, Kendall
-  and quadrant correlation, consistency at the normal model
-  is always forced.}
+  specified correlation functional.}
 }
 \value{
-  An object of class \code{"cca"} with the following
+  An object of class \code{"maxCor"} with the following
   components:
 
-  \item{cor}{a numeric vector giving the canonical
-  correlation measures.}
+  \item{cor}{a numeric giving the maximum correlation
+  estimate.}
 
-  \item{A}{a numeric matrix in which the columns contain
-  the canonical vectors for \code{x}.}
+  \item{a}{numeric; the weighting vector for \code{x}.}
 
-  \item{B}{a numeric matrix in which the columns contain
-  the canonical vectors for \code{y}.}
+  \item{b}{numeric; the weighting vector for \code{y}.}
 
   \item{call}{the matched function call.}
 }
 \description{
-  Perform canoncial correlation analysis via projection
-  pursuit based on projections through the data points,
-  with a focus on robust and nonparametric methods.
+  Compute the maximum correlation between two data sets via
+  projection pursuit based on projections through the data
+  points, with a focus on robust and nonparametric methods.
 }
 \details{
   First the candidate projection directions are defined for
@@ -83,11 +70,6 @@
   data point.  Then the algorithm scans all \eqn{n^2}
   possible combinations for the maximum correlation, where
   \eqn{n} is the number of observations.
-}
-\note{
-  \code{CCAproj} is a simple wrapper function for
-  \code{ccaProj} for more compatibility with package
-  \pkg{pcaPP} concerning function names.
 }
 \examples{
 ## generate data
@@ -102,17 +84,18 @@ x <- xy[, 1:p]
 y <- xy[, (p+1):m]
 
 ## Spearman correlation
-ccaProj(x, y, method = "spearman")
+maxCorProj(x, y, method = "spearman")
+maxCorProj(x, y, method = "spearman", consistent = TRUE)
 
 ## Pearson correlation
-ccaProj(x, y, method = "pearson")
+maxCorProj(x, y, method = "pearson")
 }
 \author{
   Andreas Alfons
 }
 \seealso{
-  \code{\link{ccaGrid}}, \code{\link{maxCorProj}},
-  \code{\link{corFunctions}}
+  \code{\link{maxCorGrid}}, \code{\link{ccaProj}},
+  \code{\link{corFunctions}},
 }
 \keyword{multivariate}
 \keyword{robust}

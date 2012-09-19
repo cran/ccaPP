@@ -17,6 +17,20 @@ print.cca <- function(x, ...) {
     invisible(x)
 }
 
+#' @S3method print maxCor
+print.maxCor <- function(x, ...) {
+    # print function call
+    if(!is.null(call <- x$call)) {
+        cat("\nCall:\n")
+        dput(x$call)
+    }
+    # print maximum correlation
+    cat("\nMaximum correlation:\n")
+    print(x$cor, ...)
+    # return object invisibly
+    invisible(x)
+}
+
 #' @S3method print permTest
 print.permTest <- function(x, ...) {
     # print general statement

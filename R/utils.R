@@ -26,14 +26,17 @@ fastRank <- function(x) {
 }
 
 ## get list of control arguments for correlation function
-getCorControl <- function(method, control) {
+getCorControl <- function(method, control, forceConsistency = TRUE) {
     if(method %in% c("spearman", "kendall", "quadrant")) {
-        # get default values (the three functions have the same arguments)
-        out <- formals(corSpearman)[-(1:2)]
-        # check supplied values
-        if(is.list(control)) {
-            if(!is.null(consistent <- control$consistent)) {
-                out$consistent <- isTRUE(consistent)
+        if(forceConsistency) out <- list(consistent=TRUE)
+        else {
+            # get default values (the three functions have the same arguments)
+            out <- formals(corSpearman)[-(1:2)]
+            # check supplied values
+            if(is.list(control)) {
+                if(!is.null(consistent <- control$consistent)) {
+                    out$consistent <- isTRUE(consistent)
+                }
             }
         }
     } else if(method == "M") {
