@@ -16,6 +16,6 @@ using namespace Rcpp;
 // functions to export to R
 RcppExport SEXP R_fastCor(SEXP R_x, SEXP R_y, SEXP R_method, SEXP R_control);	// for testing
 RcppExport SEXP R_ccaPP(SEXP R_x, SEXP R_y, SEXP R_k, SEXP R_method, SEXP R_corControl,
-		SEXP R_algorithm, SEXP R_ppControl);
+		SEXP R_algorithm, SEXP R_ppControl, SEXP R_fallback);
 
 #endif

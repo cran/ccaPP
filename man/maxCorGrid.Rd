@@ -1,27 +1,17 @@
-\name{ccaGrid}
-\alias{ccaGrid}
-\alias{CCAgrid}
-\alias{print.cca}
-\title{(Robust) CCA via alternating series of grid searches}
+\name{maxCorGrid}
+\alias{maxCorGrid}
+\alias{print.maxCor}
+\title{(Robust) maximum correlation via alternating series of grid searches}
 \usage{
-  ccaGrid(x, y, k = 1,
+  maxCorGrid(x, y,
     method = c("spearman", "kendall", "quadrant", "M", "pearson"),
     control = list(...), nIterations = 10, nAlternate = 10,
     nGrid = 25, select = NULL, tol = 1e-06,
     fallback = FALSE, seed = NULL, ...)
-
-  CCAgrid(x, y, k = 1,
-    method = c("spearman", "kendall", "quadrant", "M", "pearson"),
-    maxiter = 10, maxalter = 10, splitcircle = 25,
-    select = NULL, zero.tol = 1e-06, fallback = FALSE,
-    seed = NULL, ...)
 }
 \arguments{
   \item{x,y}{each can be a numeric vector, matrix or data
   frame.}
-
-  \item{k}{an integer giving the number of canonical
-  variables to compute.}
 
   \item{method}{a character string specifying the
   correlation functional to maximize.  Possible values are
@@ -38,16 +28,15 @@
   supplied, this takes precedence over additional arguments
   supplied via the \code{\dots} argument.}
 
-  \item{nIterations,maxiter}{an integer giving the maximum
-  number of iterations.}
+  \item{nIterations}{an integer giving the maximum number
+  of iterations.}
 
-  \item{nAlternate,maxalter}{an integer giving the maximum
-  number of alternate series of grid searches in each
-  iteration.}
+  \item{nAlternate}{an integer giving the maximum number of
+  alternate series of grid searches in each iteration.}
 
-  \item{nGrid,splitcircle}{an integer giving the number of
-  equally spaced grid points on the unit circle to use in
-  each grid search.}
+  \item{nGrid}{an integer giving the number of equally
+  spaced grid points on the unit circle to use in each grid
+  search.}
 
   \item{select}{optional; either an integer vector of
   length two or a list containing two index vectors.  In
@@ -61,8 +50,8 @@
   \code{y}, and vice versa for the second integer (see
   \dQuote{Details}).}
 
-  \item{tol,zero.tol}{a small positive numeric value to be
-  used for determining convergence.}
+  \item{tol}{a small positive numeric value to be used for
+  determining convergence.}
 
   \item{fallback}{logical; if a correlation functional
   other than the Pearson correlation is maximized, the data
@@ -82,31 +71,26 @@
   set.}
 
   \item{\dots}{additional arguments to be passed to the
-  specified correlation functional.  Currently, this is
-  only relevant for the M-estimator.  For Spearman, Kendall
-  and quadrant correlation, consistency at the normal model
-  is always forced.}
+  specified correlation functional.}
 }
 \value{
-  An object of class \code{"cca"} with the following
+  An object of class \code{"maxCor"} with the following
   components:
 
-  \item{cor}{a numeric vector giving the canonical
-  correlation measures.}
+  \item{cor}{a numeric giving the maximum correlation
+  estimate.}
 
-  \item{A}{a numeric matrix in which the columns contain
-  the canonical vectors for \code{x}.}
+  \item{a}{numeric; the weighting vector for \code{x}.}
 
-  \item{B}{a numeric matrix in which the columns contain
-  the canonical vectors for \code{y}.}
+  \item{b}{numeric; the weighting vector for \code{y}.}
 
   \item{call}{the matched function call.}
 }
 \description{
-  Perform canoncial correlation analysis via projection
-  pursuit based on alternating series of grid searches in
-  two-dimensional subspaces of each data set, with a focus
-  on robust and nonparametric methods.
+  Compute the maximum correlation between two data sets via
+  projection pursuit based on alternating series of grid
+  searches in two-dimensional subspaces of each data set,
+  with a focus on robust and nonparametric methods.
 }
 \details{
   The algorithm is based on alternating series of grid
@@ -138,11 +122,6 @@
   variables, or to specify the subsets of variables
   directly.
 }
-\note{
-  \code{CCAgrid} is a simple wrapper function for
-  \code{ccaGrid} for more compatibility with package
-  \pkg{pcaPP} concerning function and argument names.
-}
 \examples{
 ## generate data
 library("mvtnorm")
@@ -156,17 +135,18 @@ x <- xy[, 1:p]
 y <- xy[, (p+1):m]
 
 ## Spearman correlation
-ccaGrid(x, y, method = "spearman")
+maxCorGrid(x, y, method = "spearman")
+maxCorGrid(x, y, method = "spearman", consistent = TRUE)
 
 ## Pearson correlation
-ccaGrid(x, y, method = "pearson")
+maxCorGrid(x, y, method = "pearson")
 }
 \author{
   Andreas Alfons
 }
 \seealso{
-  \code{\link{ccaProj}}, \code{\link{maxCorGrid}},
-  \code{\link{corFunctions}}
+  \code{\link{maxCorProj}}, \code{\link{ccaGrid}},
+  \code{\link{corFunctions}},
 }
 \keyword{multivariate}
 \keyword{robust}

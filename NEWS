@@ -1,3 +1,28 @@
+Changes in ccaPP version 0.2.0
+
+    + Functions ccaGrid() and ccaProj() now force consistency of the Spearman, 
+      Kendall and quadrant correlation.
+    
+    + New functions maxCorGrid() and maxCorProj() for maximum correlation, 
+      which retain the argument for consistency of the Spearman, Kendall and 
+      quadrant correlation.
+    
+    + permTest(): now using the new functions maxCorGrid() and maxCorProj() 
+      rather than ccaGrid() and ccaProj().
+    
+    + permTest(): argument 'cl' is now preferred over argument 'ncores' for 
+      parallel computing.
+    
+    + Added fallback mode for robust standardization if the MAD of a variable 
+      is zero.
+    
+    + Bugfix in ccaGrid() and its wrapper CCAgrid: seed for the random number 
+      generator is no longer ignored.
+    
+    + Bugfix in CCAproj(): now correctly wrapped around ccaProj().
+
+
+
 Changes in ccaPP version 0.1.1
 
     + Using package parallel now to detect the number of available processor 
