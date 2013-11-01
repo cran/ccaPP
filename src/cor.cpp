@@ -68,7 +68,7 @@ double corSpearman(const vec& x, const vec& y) {
 		if(ISNAN(x(i)) || ISNAN(y(i))) return(NA_REAL);
 	}
 	// compute ranks
-	vec ranksX = rank(x), ranksY = rank(y);
+	vec ranksX = rank_ccaPP(x), ranksY = rank_ccaPP(y);
 	// return Pearson correlation for ranks
 	return corPearson(ranksX, ranksY);
 }
@@ -263,8 +263,23 @@ double corM(const vec& x, const vec& y, const double& prob,
 			covMat(1, 1) = var(y);
 
 		} else {
-			covMat(0, 0) = pow(mad(x, centerX), 2);
-			covMat(1, 1) = pow(mad(y, centerY), 2);
+			// check whether the MAD of x is 0 and fall back on the
+			// standard deviation in that case
+			double tmp = mad(x, centerX);
+			if(tmp == 0) {
+				centerX = mean(x);
+				covMat(0, 0) = var(x);
+			} else {
+				covMat(0, 0) = pow(tmp, 2);
+			}
+			// check whether the MAD of y is 0
+			tmp = mad(y, centerY);
+			if(tmp == 0) {
+				centerY = mean(y);
+				covMat(1, 1) = var(y);
+			} else {
+				covMat(1, 1) = pow(tmp, 2);
+			}
 		}
 		covMat(1, 0) = r * sqrt(covMat(0, 0) * covMat(1, 1));
 		covMat(0, 1) = covMat(1, 0);

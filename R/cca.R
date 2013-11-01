@@ -1,7 +1,7 @@
-# ----------------------
+# ------------------------------------
 # Author: Andreas Alfons
-#         KU Leuven
-# ----------------------
+#         Erasmus University Rotterdam
+# ------------------------------------
 
 #' (Robust) CCA via alternating series of grid searches
 #' 
@@ -33,6 +33,14 @@
 #' selected subsets of variables, or to specify the subsets of variables 
 #' directly.
 #' 
+#' Note that also the data sets are ordered according to the maximum average 
+#' absolute correlation with the respective other data set to ensure symmetry 
+#' of the algorithm.
+#' 
+#' For higher order canonical correlations, the data are first transformed into 
+#' suitable subspaces.  Then the alternate grid algorithm is applied to the 
+#' reduced data and the results are back-transformed to the original space.
+#' 
 #' @aliases print.cca
 #' 
 #' @param x,y  each can be a numeric vector, matrix or data frame.
@@ -63,13 +71,15 @@
 #' the second integer (see \dQuote{Details}).
 #' @param tol,zero.tol  a small positive numeric value to be used for 
 #' determining convergence.
-#' @param fallback  logical; if a correlation functional other than the 
-#' Pearson correlation is maximized, the data are first robustly standardized 
-#' via median and MAD.  This indicates whether standardization via mean and 
-#' standard deviation should be performed as a fallback mode for variables 
-#' whose MAD is zero (e.g., for dummy variables).  Note that if the Pearson 
-#' correlation is maximized, the data are always standardized via mean and 
-#' standard deviation.
+#' @param standardize  a logical indicating whether the data should be 
+#' (robustly) standardized.
+#' @param fallback  logical indicating whether a fallback mode for robust 
+#' standardization should be used.  If a correlation functional other than the 
+#' Pearson correlation is maximized, the first attempt for standardizing the 
+#' data is via median and MAD.  In the fallback mode, variables whose MADs are 
+#' zero (e.g., dummy variables) are standardized via mean and standard 
+#' deviation.  Note that if the Pearson correlation is maximized, 
+#' standardization is always done via mean and standard deviation.
 #' @param seed  optional initial seed for the random number generator (see 
 #' \code{\link{.Random.seed}}).  This is only used if \code{select} specifies 
 #' the numbers of variables of each data set to be randomly selected for 
@@ -86,6 +96,14 @@
 #' vectors for \code{x}.
 #' @returnItem B  a numeric matrix in which the columns contain the canonical 
 #' vectors for \code{y}.
+#' @returnItem centerX  a numeric vector giving the center estimates used in 
+#' standardization of \code{x}.
+#' @returnItem centerY  a numeric vector giving the center estimates used in 
+#' standardization of \code{y}.
+#' @returnItem scaleX  a numeric vector giving the scale estimates used in 
+#' standardization of \code{x}.
+#' @returnItem scaleY  a numeric vector giving the scale estimates used in 
+#' standardization of \code{y}.
 #' @returnItem call  the matched function call.
 #' 
 #' @note \code{CCAgrid} is a simple wrapper function for \code{ccaGrid} for 
@@ -119,27 +137,30 @@
 #' 
 #' @import Rcpp
 #' @import RcppArmadillo
+#' @import robustbase
 #' @useDynLib ccaPP
 #' @export
 
 ccaGrid <- function(x, y, k = 1, 
-        method = c("spearman", "kendall", "quadrant", "M", "pearson"), 
-        control = list(...), nIterations = 10, nAlternate = 10, nGrid = 25, 
-        select = NULL, tol = 1e-06, fallback = FALSE, seed = NULL, ...) {
-    ## initializations
-    matchedCall <- match.call()
-    ## define list of control arguments for algorithm
-    nIterations <- as.integer(nIterations)
-    nAlternate <- as.integer(nAlternate)
-    nGrid <- as.integer(nGrid)
-    tol <- as.numeric(tol)
-    ppControl <- list(nIterations=nIterations, nAlternate=nAlternate, 
-        nGrid=nGrid, select=select, tol=tol)
-    ## call workhorse function
-    cca <- ccaPP(x, y, k, method=method, corControl=control, algorithm="grid", 
-        ppControl=ppControl, fallback=fallback, seed=seed)
-    cca$call <- matchedCall
-    cca
+                    method = c("spearman", "kendall", "quadrant", "M", "pearson"), 
+                    control = list(...), nIterations = 10, nAlternate = 10, 
+                    nGrid = 25, select = NULL, tol = 1e-06, standardize = TRUE, 
+                    fallback = FALSE, seed = NULL, ...) {
+  ## initializations
+  matchedCall <- match.call()
+  ## define list of control arguments for algorithm
+  nIterations <- as.integer(nIterations)
+  nAlternate <- as.integer(nAlternate)
+  nGrid <- as.integer(nGrid)
+  tol <- as.numeric(tol)
+  ppControl <- list(nIterations=nIterations, nAlternate=nAlternate, 
+                    nGrid=nGrid, select=select, tol=tol)
+  ## call workhorse function
+  cca <- ccaPP(x, y, k, method=method, corControl=control, algorithm="grid", 
+               ppControl=ppControl, standardize=standardize, fallback=fallback, 
+               seed=seed)
+  cca$call <- matchedCall
+  cca
 }
 
 ## wrapper function for more compatibility with package pcaPP
@@ -147,17 +168,19 @@ ccaGrid <- function(x, y, k = 1,
 #' @export
 
 CCAgrid <- function(x, y, k = 1, 
-        method = c("spearman", "kendall", "quadrant", "M", "pearson"), 
-        maxiter = 10, maxalter = 10, splitcircle = 25, select=NULL, 
-        zero.tol = 1e-06, fallback = FALSE, seed = NULL, ...) {
-    ## initializations
-    matchedCall <- match.call()
-    ## call ccaGrid()
-    cca <- ccaGrid(x, y, k=k, method=method, nIterations=maxiter, 
-        nAlternate=maxalter, nGrid=splitcircle, select=select, 
-        tol=zero.tol, fallback=fallback, seed=seed, ...)
-    cca$call <- matchedCall
-    cca
+                    method = c("spearman", "kendall", "quadrant", "M", "pearson"), 
+                    maxiter = 10, maxalter = 10, splitcircle = 25, select=NULL, 
+                    zero.tol = 1e-06, standardize = TRUE, fallback = FALSE, 
+                    seed = NULL, ...) {
+  ## initializations
+  matchedCall <- match.call()
+  ## call ccaGrid()
+  cca <- ccaGrid(x, y, k=k, method=method, nIterations=maxiter, 
+                 nAlternate=maxalter, nGrid=splitcircle, select=select, 
+                 tol=zero.tol, standardize=standardize, fallback=fallback, 
+                 seed=seed, ...)
+  cca$call <- matchedCall
+  cca
 }
 
 
@@ -172,6 +195,10 @@ CCAgrid <- function(x, y, k = 1,
 #' scans all \eqn{n^2} possible combinations for the maximum correlation, 
 #' where \eqn{n} is the number of observations.
 #' 
+#' For higher order canonical correlations, the data are first transformed into 
+#' suitable subspaces.  Then the alternate grid algorithm is applied to the 
+#' reduced data and the results are back-transformed to the original space.
+#' 
 #' @param x,y  each can be a numeric vector, matrix or data frame.
 #' @param k  an integer giving the number of canonical variables to compute.
 #' @param method  a character string specifying the correlation functional to 
@@ -184,18 +211,20 @@ CCAgrid <- function(x, y, k = 1,
 #' @param control  a list of additional arguments to be passed to the specified 
 #' correlation functional.  If supplied, this takes precedence over additional 
 #' arguments supplied via the \code{\dots} argument.
+#' @param standardize  a logical indicating whether the data should be 
+#' (robustly) standardized.
 #' @param useL1Median  a logical indicating whether the \eqn{L_{1}}{L1} medians 
-#' should be used as the centers of the data sets (defaults to 
-#' \code{TRUE}).  If \code{FALSE}, the columnwise centers are used instead 
+#' should be used as the centers of the data sets in standardization (defaults 
+#' to \code{TRUE}).  If \code{FALSE}, the columnwise centers are used instead 
 #' (columnwise means if \code{method} is \code{"pearson"} and columnwise 
 #' medians otherwise).
-#' @param fallback  logical; if a correlation functional other than the 
-#' Pearson correlation is maximized, the data are first robustly standardized 
-#' via median and MAD.  This indicates whether standardization via mean and 
-#' standard deviation should be performed as a fallback mode for variables 
-#' whose MAD is zero (e.g., for dummy variables).  Note that if the Pearson 
-#' correlation is maximized, the data are always standardized via mean and 
-#' standard deviation.
+#' @param fallback  logical indicating whether a fallback mode for robust 
+#' standardization should be used.  If a correlation functional other than the 
+#' Pearson correlation is maximized, the first attempt for standardizing the 
+#' data is via median and MAD.  In the fallback mode, variables whose MADs are 
+#' zero (e.g., dummy variables) are standardized via mean and standard 
+#' deviation.  Note that if the Pearson correlation is maximized, 
+#' standardization is always done via mean and standard deviation.
 #' @param \dots  additional arguments to be passed to the specified correlation 
 #' functional.  Currently, this is only relevant for the M-estimator.  For 
 #' Spearman, Kendall and quadrant correlation, consistency at the normal model 
@@ -208,6 +237,14 @@ CCAgrid <- function(x, y, k = 1,
 #' vectors for \code{x}.
 #' @returnItem B  a numeric matrix in which the columns contain the canonical 
 #' vectors for \code{y}.
+#' @returnItem centerX  a numeric vector giving the center estimates used in 
+#' standardization of \code{x}.
+#' @returnItem centerY  a numeric vector giving the center estimates used in 
+#' standardization of \code{y}.
+#' @returnItem scaleX  a numeric vector giving the scale estimates used in 
+#' standardization of \code{x}.
+#' @returnItem scaleY  a numeric vector giving the scale estimates used in 
+#' standardization of \code{y}.
 #' @returnItem call  the matched function call.
 #' 
 #' @note \code{CCAproj} is a simple wrapper function for \code{ccaProj} for 
@@ -241,21 +278,23 @@ CCAgrid <- function(x, y, k = 1,
 #' @import Rcpp
 #' @import RcppArmadillo
 #' @import pcaPP
+#' @import robustbase
 #' @useDynLib ccaPP
 #' @export
 
 ccaProj <- function(x, y, k = 1, 
-        method = c("spearman", "kendall", "quadrant", "M", "pearson"), 
-        control = list(...), useL1Median = TRUE, fallback = FALSE, ...) {
-    ## initializations
-    matchedCall <- match.call()
-    ## define list of control arguments for algorithm
-    ppControl <- list(useL1Median=isTRUE(useL1Median))
-    ## call workhorse function
-    cca <- ccaPP(x, y, k, method=method, corControl=control, algorithm="proj", 
-        ppControl=ppControl, fallback=fallback)
-    cca$call <- matchedCall
-    cca
+                    method = c("spearman", "kendall", "quadrant", "M", "pearson"), 
+                    control = list(...), standardize = TRUE, useL1Median = TRUE, 
+                    fallback = FALSE, ...) {
+  ## initializations
+  matchedCall <- match.call()
+  ## define list of control arguments for algorithm
+  ppControl <- list(useL1Median=isTRUE(useL1Median))
+  ## call workhorse function
+  cca <- ccaPP(x, y, k, method=method, corControl=control, algorithm="proj", 
+               ppControl=ppControl, standardize=standardize, fallback=fallback)
+  cca$call <- matchedCall
+  cca
 }
 
 ## wrapper function for more compatibility with package pcaPP
@@ -263,90 +302,93 @@ ccaProj <- function(x, y, k = 1,
 #' @export
 
 CCAproj <- function(x, y, k = 1, 
-        method = c("spearman", "kendall", "quadrant", "M", "pearson"), 
-        useL1Median = TRUE, fallback = FALSE, ...) {
-    ## initializations
-    matchedCall <- match.call()
-    ## call ccaProj()
-    cca <- ccaProj(x, y, k=k, method=method, useL1Median=useL1Median, 
-        fallback=fallback, ...)
-    cca$call <- matchedCall
-    cca
+                    method = c("spearman", "kendall", "quadrant", "M", "pearson"), 
+                    standardize = TRUE, useL1Median = TRUE, fallback = FALSE, 
+                    ...) {
+  ## initializations
+  matchedCall <- match.call()
+  ## call ccaProj()
+  cca <- ccaProj(x, y, k=k, method=method, standardize=standardize, 
+                 useL1Median=useL1Median, fallback=fallback, ...)
+  cca$call <- matchedCall
+  cca
 }
 
 
 ## workhorse function
 ccaPP <- function(x, y, k = 1, 
-        method = c("spearman", "kendall", "quadrant", "M", "pearson"), 
-        corControl, forceConsistency = TRUE, algorithm = c("grid", "proj"), 
-        ppControl, fallback = FALSE, seed = NULL) {
-    ## initializations
-    x <- as.matrix(x)
-    y <- as.matrix(y)
-    n <- nrow(x)
-    if(nrow(y) != n) {
-        stop("'x' and 'y' must have the same number of observations")
-    }
-    p <- ncol(x)
-    q <- ncol(y)
-    # check number of canonical variables to compute
-    k <- rep(as.integer(k), length.out=1)
-    if(is.na(k) || k < 0) k <- formals()$k
-    k <- min(k, p, q)
-    ## prepare the data and call C++ function
-    if(n == 0 || p == 0 || q == 0 || k == 0) {
-        # zero dimension
-        A <- B <- matrix(numeric(), 0, 0)
-        cca <- list(cor=NA, A=A, B=B)
-    } else {
-        # check method and get list of control arguments
-        method <- match.arg(method)
-        corControl <- getCorControl(method, corControl, forceConsistency)
-        # additional checks for grid search algorithm
-        if(algorithm == "grid") {
-            # check subset of variables to be used for determining the order of 
-            # the variables from the respective other data set
-            select <- ppControl$select
-            ppControl$select <- NULL
-            if(!is.null(select)) {
-                if(is.list(select)) {
-                    # make sure select is a list with two index vectors and 
-                    # drop invalid indices from each vector
-                    select <- rep(select, length.out=2)
-                    select <- mapply(function(indices, max) {
-                            indices <- as.integer(indices)
-                            indices[which(indices > 0 & indices <= max)] - 1
-                        }, select, c(p, q))
-                    valid <- sapply(select, length) > 0
-                    # add the two index vectors to control object
-                    if(all(valid)) {
-                        ppControl$selectX <- select[[1]]
-                        ppControl$selectY <- select[[2]]
-                    } else select <- NULL
-                } else {
-                    # check number of indices to sample
-                    select <- rep(as.integer(select), length.out=2)
-                    valid <- !is.na(select) & select > 0 & select < c(p, q)
-                    if(all(valid)) {
-                        # generate index vectors and add them to control object
-                        if(!is.null(seed)) set.seed(seed)
-                        ppControl$selectX <- sample.int(p, select[1]) - 1
-                        ppControl$selectY <- sample.int(q, select[2]) - 1
-                    } else select <- NULL
-                }
-            }
-            if(is.null(select)) {
-                ppControl$selectX <- ppControl$selectY <- integer()
-            }
+                  method = c("spearman", "kendall", "quadrant", "M", "pearson"), 
+                  corControl, forceConsistency = TRUE, 
+                  algorithm = c("grid", "proj"), ppControl, standardize = TRUE, 
+                  fallback = FALSE, seed = NULL) {
+  ## initializations
+  x <- as.matrix(x)
+  y <- as.matrix(y)
+  n <- nrow(x)
+  if(nrow(y) != n) {
+    stop("'x' and 'y' must have the same number of observations")
+  }
+  p <- ncol(x)
+  q <- ncol(y)
+  # check number of canonical variables to compute
+  k <- rep(as.integer(k), length.out=1)
+  if(is.na(k) || k < 0) k <- formals()$k
+  k <- min(k, p, q)
+  ## prepare the data and call C++ function
+  if(n == 0 || p == 0 || q == 0 || k == 0) {
+    # zero dimension
+    A <- B <- matrix(numeric(), 0, 0)
+    cca <- list(cor=NA, A=A, B=B)
+  } else {
+    # check method and get list of control arguments
+    method <- match.arg(method)
+    corControl <- getCorControl(method, corControl, forceConsistency)
+    # additional checks for grid search algorithm
+    if(algorithm == "grid") {
+      # check subset of variables to be used for determining the order of 
+      # the variables from the respective other data set
+      select <- ppControl$select
+      ppControl$select <- NULL
+      if(!is.null(select)) {
+        if(is.list(select)) {
+          # make sure select is a list with two index vectors and 
+          # drop invalid indices from each vector
+          select <- rep(select, length.out=2)
+          select <- mapply(function(indices, max) {
+            indices <- as.integer(indices)
+            indices[which(indices > 0 & indices <= max)] - 1
+          }, select, c(p, q))
+          valid <- sapply(select, length) > 0
+          # add the two index vectors to control object
+          if(all(valid)) {
+            ppControl$selectX <- select[[1]]
+            ppControl$selectY <- select[[2]]
+          } else select <- NULL
+        } else {
+          # check number of indices to sample
+          select <- rep(as.integer(select), length.out=2)
+          valid <- !is.na(select) & select > 0 & select < c(p, q)
+          if(all(valid)) {
+            # generate index vectors and add them to control object
+            if(!is.null(seed)) set.seed(seed)
+            ppControl$selectX <- sample.int(p, select[1]) - 1
+            ppControl$selectY <- sample.int(q, select[2]) - 1
+          } else select <- NULL
         }
-        # call C++ function
-        cca <- .Call("R_ccaPP", R_x=x, R_y=y, R_k=k, R_method=method, 
-            R_corControl=corControl, R_algorithm=algorithm, 
-            R_ppControl=ppControl, R_fallback=isTRUE(fallback), 
-            PACKAGE="ccaPP")
-        cca$cor <- drop(cca$cor)
+      }
+      if(is.null(select)) {
+        ppControl$selectX <- ppControl$selectY <- integer()
+      }
     }
-    ## assign class and return results
-    class(cca) <- "cca"
-    cca
+    # call C++ function
+    cca <- .Call("R_ccaPP", R_x=x, R_y=y, R_k=k, R_method=method, 
+                 R_corControl=corControl, R_algorithm=algorithm, 
+                 R_ppControl=ppControl, R_standardize=isTRUE(standardize), 
+                 R_fallback=isTRUE(fallback), PACKAGE="ccaPP")
+    drop <- c("cor", "centerX", "centerY", "scaleX", "scaleY")
+    cca[drop] <- lapply(cca[drop], drop)
+  }
+  ## assign class and return results
+  class(cca) <- "cca"
+  cca
 }

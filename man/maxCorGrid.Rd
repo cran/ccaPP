@@ -7,7 +7,7 @@
     method = c("spearman", "kendall", "quadrant", "M", "pearson"),
     control = list(...), nIterations = 10, nAlternate = 10,
     nGrid = 25, select = NULL, tol = 1e-06,
-    fallback = FALSE, seed = NULL, ...)
+    standardize = TRUE, fallback = FALSE, seed = NULL, ...)
 }
 \arguments{
   \item{x,y}{each can be a numeric vector, matrix or data
@@ -53,15 +53,18 @@
   \item{tol}{a small positive numeric value to be used for
   determining convergence.}
 
-  \item{fallback}{logical; if a correlation functional
-  other than the Pearson correlation is maximized, the data
-  are first robustly standardized via median and MAD.  This
-  indicates whether standardization via mean and standard
-  deviation should be performed as a fallback mode for
-  variables whose MAD is zero (e.g., for dummy variables).
-  Note that if the Pearson correlation is maximized, the
-  data are always standardized via mean and standard
-  deviation.}
+  \item{standardize}{a logical indicating whether the data
+  should be (robustly) standardized.}
+
+  \item{fallback}{logical indicating whether a fallback
+  mode for robust standardization should be used.  If a
+  correlation functional other than the Pearson correlation
+  is maximized, the first attempt for standardizing the
+  data is via median and MAD.  In the fallback mode,
+  variables whose MADs are zero (e.g., dummy variables) are
+  standardized via mean and standard deviation.  Note that
+  if the Pearson correlation is maximized, standardization
+  is always done via mean and standard deviation.}
 
   \item{seed}{optional initial seed for the random number
   generator (see \code{\link{.Random.seed}}).  This is only
@@ -83,6 +86,18 @@
   \item{a}{numeric; the weighting vector for \code{x}.}
 
   \item{b}{numeric; the weighting vector for \code{y}.}
+
+  \item{centerX}{a numeric vector giving the center
+  estimates used in standardization of \code{x}.}
+
+  \item{centerY}{a numeric vector giving the center
+  estimates used in standardization of \code{y}.}
+
+  \item{scaleX}{a numeric vector giving the scale estimates
+  used in standardization of \code{x}.}
+
+  \item{scaleY}{a numeric vector giving the scale estimates
+  used in standardization of \code{y}.}
 
   \item{call}{the matched function call.}
 }
@@ -121,6 +136,10 @@
   thereby possible to use randomly selected subsets of
   variables, or to specify the subsets of variables
   directly.
+
+  Note that also the data sets are ordered according to the
+  maximum average absolute correlation with the respective
+  other data set to ensure symmetry of the algorithm.
 }
 \examples{
 ## generate data
@@ -146,7 +165,7 @@ maxCorGrid(x, y, method = "pearson")
 }
 \seealso{
   \code{\link{maxCorProj}}, \code{\link{ccaGrid}},
-  \code{\link{corFunctions}},
+  \code{\link{corFunctions}}
 }
 \keyword{multivariate}
 \keyword{robust}

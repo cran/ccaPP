@@ -4,8 +4,8 @@
 \usage{
   maxCorProj(x, y,
     method = c("spearman", "kendall", "quadrant", "M", "pearson"),
-    control = list(...), useL1Median = TRUE,
-    fallback = FALSE, ...)
+    control = list(...), standardize = TRUE,
+    useL1Median = TRUE, fallback = FALSE, ...)
 }
 \arguments{
   \item{x,y}{each can be a numeric vector, matrix or data
@@ -26,22 +26,25 @@
   supplied, this takes precedence over additional arguments
   supplied via the \code{\dots} argument.}
 
+  \item{standardize}{a logical indicating whether the data
+  should be (robustly) standardized.}
+
   \item{useL1Median}{a logical indicating whether the
   \eqn{L_{1}}{L1} medians should be used as the centers of
-  the data sets (defaults to \code{TRUE}).  If
-  \code{FALSE}, the columnwise centers are used instead
-  (columnwise means if \code{method} is \code{"pearson"}
-  and columnwise medians otherwise).}
+  the data sets in standardization (defaults to
+  \code{TRUE}).  If \code{FALSE}, the columnwise centers
+  are used instead (columnwise means if \code{method} is
+  \code{"pearson"} and columnwise medians otherwise).}
 
-  \item{fallback}{logical; if a correlation functional
-  other than the Pearson correlation is maximized, the data
-  are first robustly standardized via median and MAD.  This
-  indicates whether standardization via mean and standard
-  deviation should be performed as a fallback mode for
-  variables whose MAD is zero (e.g., for dummy variables).
-  Note that if the Pearson correlation is maximized, the
-  data are always standardized via mean and standard
-  deviation.}
+  \item{fallback}{logical indicating whether a fallback
+  mode for robust standardization should be used.  If a
+  correlation functional other than the Pearson correlation
+  is maximized, the first attempt for standardizing the
+  data is via median and MAD.  In the fallback mode,
+  variables whose MADs are zero (e.g., dummy variables) are
+  standardized via mean and standard deviation.  Note that
+  if the Pearson correlation is maximized, standardization
+  is always done via mean and standard deviation.}
 
   \item{\dots}{additional arguments to be passed to the
   specified correlation functional.}
@@ -56,6 +59,18 @@
   \item{a}{numeric; the weighting vector for \code{x}.}
 
   \item{b}{numeric; the weighting vector for \code{y}.}
+
+  \item{centerX}{a numeric vector giving the center
+  estimates used in standardization of \code{x}.}
+
+  \item{centerY}{a numeric vector giving the center
+  estimates used in standardization of \code{y}.}
+
+  \item{scaleX}{a numeric vector giving the scale estimates
+  used in standardization of \code{x}.}
+
+  \item{scaleY}{a numeric vector giving the scale estimates
+  used in standardization of \code{y}.}
 
   \item{call}{the matched function call.}
 }

@@ -1,3 +1,28 @@
+Changes in ccaPP version 0.3.0
+
+    + Standardization in functions for CCA and maximum correlation is now 
+      optional.
+    
+    + Functions for CCA and maximum correlation now return center and scale 
+      estimates from standardization.
+    
+    + Slightly faster version of fastMedian().
+    
+    + Function permTest() now allows to supply permutations as an argument.
+    
+    + Bugfix in functions for CCA concerning side constraints for higher order 
+      canonical correlations.
+    
+    + Bugfix in functions for CCA: reduced data for higher order canonical 
+      correlations no longer standardized.
+    
+    + Bugfix in corM(): robust starting values now work with dummy variables.
+    
+    + Renamed internal C++ function rank() to fix error with clang++ under 
+      OS X Mavericks.
+
+
+
 Changes in ccaPP version 0.2.0
 
     + Functions ccaGrid() and ccaProj() now force consistency of the Spearman, 
