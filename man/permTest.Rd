@@ -2,8 +2,9 @@
 \alias{permTest}
 \title{(Robust) permutation test for independence}
 \usage{
-  permTest(x, y, R = 1000, fun = maxCorGrid, nCores = 1,
-    cl = NULL, seed = NULL, ...)
+  permTest(x, y, R = 1000, fun = maxCorGrid,
+    permutations = NULL, nCores = 1, cl = NULL,
+    seed = NULL, ...)
 }
 \arguments{
   \item{x,y}{each can be a numeric vector, matrix or data
@@ -18,6 +19,10 @@
   \code{\link{maxCorProj}}.  It should expect the data to
   be passed as the first and second argument, and must
   return an object of class \code{"maxCor"}.}
+
+  \item{permutations}{an integer matrix in which each
+  column contains the indices of a permutation.  If
+  supplied, this is preferred over \code{R}.}
 
   \item{nCores}{a positive integer giving the number of
   processor cores to be used for parallel computing (the

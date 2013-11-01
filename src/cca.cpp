@@ -1,6 +1,6 @@
 /*
  * Author: Andreas Alfons
- *         KU Leuven
+ *         Erasmus University Rotterdam
  */
 
 #include <R.h>
@@ -587,7 +587,11 @@ double GridControl::maxCor(const mat& x, const mat& y, CorControl corControl,
 	// check direction
 	double r = corControl.cor(x * a, y * b);
 	if(r < 0) {
-		b = -b;
+		if((p > 1) && (q == 1)) {
+			a = -a;
+		} else {
+			b = -b;
+		}
 	}
 	// return maximum correlation
 	return maxCor;
@@ -759,27 +763,30 @@ bool isDummy(const vec& x) {
 
 // standardize data using median/MAD or mean/SD
 // only scale is needed for backtransformation of canonical vectors
-// x ........ data matrix
-// robust ... should the data be robustly standardized?
-// scale .... scale estimates of the variables to be computed
+// x .......... data matrix
+// robust ..... should the data be robustly standardized?
+// fallback ... should the fallback mode for robust standardization be used?
+// scale ...... scale estimates of the variables to be computed
 mat standardize(const mat& x, const bool& robust,
-		const bool& fallback, vec& scale) {
+		const bool& fallback, vec& center, vec& scale) {
 	const uword n = x.n_rows, p = x.n_cols;
 	mat xs(n, p);
-	scale.set_size(p);
+  center.set_size(p);
+  scale.set_size(p);
 	if(robust) {
 		// median and MAD
 		for(uword j = 0; j < p; j++) {
 			vec xj = x.unsafe_col(j);
-			double center;
-			scale(j) = mad(xj, center);				// compute median and MAD
+      double med;
+      scale(j) = mad(xj, med);  // compute median and MAD
+      center(j) = med;
 			if((scale(j) == 0.0) && fallback) {
 				// compute mean and standard deviation
-				center = mean(xj);
-				scale(j) = norm(xj - center, 2) / sqrt((double)(n-1));
+				center(j) = mean(xj);
+				scale(j) = norm(xj - center(j), 2) / sqrt((double)(n-1));
 			}
 			if(scale(j) == 0.0) error("zero scale");
-			xs.col(j) = (xj - center) / scale(j);	// standardize variable
+			xs.col(j) = (xj - center(j)) / scale(j);	// standardize variable
 		}
 	} else {
 		// mean and standard deviation
@@ -787,8 +794,8 @@ mat standardize(const mat& x, const bool& robust,
 			// with unsafe_col(), the original data would be changed when
 			// sweeping out the mean
 			vec xj = x.col(j);
-			double center = mean(xj);						// compute mean
-			xj -= center;									// sweep out mean
+			center(j) = mean(xj);						// compute mean
+			xj -= center(j);									// sweep out mean
 			scale(j) = norm(xj, 2) / sqrt((double)(n-1));	// compute SD
 			if(scale(j) == 0.0) error("zero scale");
 			xs.col(j) = xj / scale(j);						// sweep out SD
@@ -821,82 +828,127 @@ mat householder(const vec& a) {
 // k ............ number of canonical variables to compute
 // corControl ... control object to compute correlation
 // ppControl .... control object for algorithm
-// robust ....... should the data be robustly standardized?
+// standard ..... should the data be standardized?
+// robust ....... should robust standardization be used?
 // fallback ..... should the fallback mode for robust standardization be used?
 // A ............ matrix of canonical vectors for first matrix to be updated
 // B ............ matrix of canonical vectors for second matrix to be updated
 template <class CorControl, class PPControl>
 vec ccaPP(const mat& x, const mat& y, const uword& k, CorControl corControl,
-		PPControl ppControl, const bool& robust, const bool& fallback,
-		mat& A, mat& B) {
+		PPControl ppControl, const bool& standard, const bool& robust, 
+    const bool& fallback, mat& A, mat& B, vec& centerX, vec& centerY, 
+    vec& scaleX, vec& scaleY) {
 	// initializations
 	uword p = x.n_cols, q = y.n_cols;
 	A.set_size(p, k); B.set_size(q, k);
 	vec r(k), a, b;
-	// standardize the data
-	vec scaleX, scaleY;
-	mat xs = standardize(x, robust, fallback, scaleX);
-	mat ys = standardize(y, robust, fallback, scaleY);
-	// compute first canonical correlation variables with standardized data
-	// and transform canonical vectors back to original scale
-	r(0) = ppControl.maxCor(xs, ys, corControl, a, b);
-	backtransform(a, scaleX); backtransform(b, scaleY);
+	// standardize the data if requested
+  mat xs, ys;
+  if(standard) {
+    xs = standardize(x, robust, fallback, centerX, scaleX);
+    ys = standardize(y, robust, fallback, centerY, scaleY);
+    // compute first canonical correlation variables with standardized data
+    r(0) = ppControl.maxCor(xs, ys, corControl, a, b);
+  } else {
+    centerX = zeros<vec>(p); centerY = zeros<vec>(q);
+    scaleX = ones<vec>(p); scaleY = ones<vec>(q);
+    // compute first canonical correlation variables with original data
+    r(0) = ppControl.maxCor(x, y, corControl, a, b);
+  }
 	A.col(0) = a; B.col(0) = b;
-	// compute remaining canonical correlations
+  // compute higher order canonical correlations
 	if(k > 1) {
-		mat xl = x, yl = y;	// the data are reduced in each step
-		mat P, Q;			// for backtransformation
-		for(uword l = 1; l < k; l++) {
-			// perform Householder transformation
-			mat Pl = householder(a), Ql = householder(b);
-			xl = xl * Pl; xl.shed_col(0);	// reduced x data
-			xs = standardize(xl, robust, fallback, scaleX);
-			yl = yl * Ql; yl.shed_col(0);	// reduced y data
-			ys = standardize(yl, robust, fallback, scaleY);
-			// compute the canonical correlation and canonical vectors for the
-			// standardized reduced data sets and transform the canonical
-			// vectors back to the original scale
-			r(l) = ppControl.maxCor(xs, ys, corControl, a, b);
-			backtransform(a, scaleX); backtransform(b, scaleY);
-			// transform canonical vectors back to original space
-			if(l == 1) {
-				P = Pl; Q = Ql;
-			} else {
-				// expand current Householder matrix for x and premultiply with
-				// product of previous ones
-				Pl.insert_rows(0, zeros<mat>(l-1, p-l+1));
-				Pl.insert_cols(0, eye<mat>(p, l-1));
-				P = P * Pl;
-				// expand current Householder matrix for y and premultiply with
-				// product of previous ones
-				Ql.insert_rows(0, zeros<mat>(l-1, q-l+1));
-				Ql.insert_cols(0, eye<mat>(q, l-1));
-				Q = Q * Ql;
-			}
-			// expand canonical vectors and premultiply with product of
-			// corresponding Householder matrices
-			A.col(l) = P * join_cols(zeros<vec>(l), a);
-			B.col(l) = Q * join_cols(zeros<vec>(l), b);
-		}
-	}
-	return r;
+    // data to be reduced in each step
+    mat xl, yl;
+    if(standard) {
+      xl = xs;
+      yl = ys;
+    } else {
+      xl = x;
+      yl = y;
+    }
+    // compute covariance matrices
+    mat SigmaX, SigmaY;
+    if(robust) {
+      SigmaX = covMCD(xl);
+      SigmaY = covMCD(yl);
+    } else {
+      SigmaX = cov(xl);
+      SigmaY = cov(yl);
+    }
+    // compute spectral decompositions
+    vec eigValX, eigValY;
+    mat eigVecX, eigVecY;
+    eig_sym(eigValX, eigVecX, SigmaX); eig_sym(eigValY, eigVecY, SigmaY);
+    eigValX = sqrt(eigValX); eigValY = sqrt(eigValY);
+    // orthogonalize the data
+    xl = xl * eigVecX; 
+    for(uword j = 0; j < p; j++) xl.col(j) /= eigValX(j);
+    yl = yl * eigVecY;
+    for(uword j = 0; j < q; j++) yl.col(j) /= eigValY(j);
+    // transform first canonical vectors accordingly and divide by norm
+    a = eigValX % (eigVecX.t() * a); a /= norm(a, 2);
+    b = eigValY % (eigVecY.t() * b); b /= norm(b, 2);
+    // transform data to orthogonal subspaces and compute higher order 
+    // canonical correlations
+    mat P, Q;   // for backtransformation
+    for(uword l = 1; l < k; l++) {
+      // perform Householder transformation
+      mat Pl = householder(a), Ql = householder(b);
+      xl = xl * Pl; xl.shed_col(0);	// reduced x data
+      yl = yl * Ql; yl.shed_col(0);	// reduced y data
+      // compute canonical correlation and canonical vectors for reduced data
+      r(l) = ppControl.maxCor(xl, yl, corControl, a, b);
+      // transform canonical vectors back to original space
+      if(l == 1) {
+        P = Pl; Q = Ql;
+      } else {
+        // expand current Householder matrix for x and premultiply with
+        // product of previous ones
+        Pl.insert_rows(0, zeros<mat>(l-1, p-l+1));
+        Pl.insert_cols(0, eye<mat>(p, l-1));
+        P = P * Pl;
+        // expand current Householder matrix for y and premultiply with
+        // product of previous ones
+        Ql.insert_rows(0, zeros<mat>(l-1, q-l+1));
+        Ql.insert_cols(0, eye<mat>(q, l-1));
+        Q = Q * Ql;
+      }
+      // expand canonical vectors and premultiply with product of
+      // corresponding Householder matrices
+      vec al = eigVecX * (P * join_cols(zeros<vec>(l), a) / eigValX);
+      A.col(l) = al / norm(al, 2);
+      vec bl = eigVecY * (Q * join_cols(zeros<vec>(l), b) / eigValY); 
+      B.col(l) = bl / norm(bl, 2);
+    }
+  }
+  // back-transform canonical vectors in case of standardization
+  if(standard) {
+    for(uword l = 0; l < k; l++) {
+      vec al = A.unsafe_col(l), bl = B.unsafe_col(l);
+      backtransform(al, scaleX); backtransform(bl, scaleY);
+    }
+  }
+  // return canonical correlations
+  return r;
 }
 
 // R interface
 SEXP R_ccaPP(SEXP R_x, SEXP R_y, SEXP R_k, SEXP R_method, SEXP R_corControl,
-		SEXP R_algorithm, SEXP R_ppControl, SEXP R_fallback) {
+		SEXP R_algorithm, SEXP R_ppControl, SEXP R_standardize, SEXP R_fallback) {
 	// initializations
 	NumericMatrix Rcpp_x(R_x), Rcpp_y(R_y);	// convert data to Rcpp types
 	mat x(Rcpp_x.begin(), Rcpp_x.nrow(), Rcpp_x.ncol(), false);	// convert data
 	mat y(Rcpp_y.begin(), Rcpp_y.nrow(), Rcpp_y.ncol(), false);	// to arma types
 	uword k = as<uword>(R_k);
-	string method = as<string>(R_method);		// convert character string
-	List Rcpp_corControl(R_corControl);			// list of control parameters
-	string algorithm = as<string>(R_algorithm);	// convert character string
-	List Rcpp_ppControl(R_ppControl);			// list of control parameters
-	bool fallback = as<bool>(R_fallback);		// convert to boolean
+	string method = as<string>(R_method);       // convert character string
+	List Rcpp_corControl(R_corControl);         // list of control parameters
+	string algorithm = as<string>(R_algorithm); // convert character string
+	List Rcpp_ppControl(R_ppControl);           // list of control parameters
+  bool standard = as<bool>(R_standardize);    // convert to boolean
+  bool fallback = as<bool>(R_fallback);       // convert to boolean
 	// initialize results
-	vec r;
+	vec r, centerX, centerY, scaleX, scaleY;
 	mat A, B;
 	if(algorithm == "grid") {
 		// define control object for alternate grid searches
@@ -904,19 +956,24 @@ SEXP R_ccaPP(SEXP R_x, SEXP R_y, SEXP R_k, SEXP R_method, SEXP R_corControl,
 		// define control object for the correlations and call the arma version
 		if(method == "spearman") {
 			CorSpearmanControl corControl(Rcpp_corControl);
-			r = ccaPP(x, y, k, corControl, ppControl, true, fallback, A, B);
+      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback, 
+          A, B, centerX, centerY, scaleX, scaleY);
 		} else if(method == "kendall") {
 			CorKendallControl corControl(Rcpp_corControl);
-			r = ccaPP(x, y, k, corControl, ppControl, true, fallback, A, B);
+      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback, 
+          A, B, centerX, centerY, scaleX, scaleY);
 		} else if(method == "quadrant") {
 			CorQuadrantControl corControl(Rcpp_corControl);
-			r = ccaPP(x, y, k, corControl, ppControl, true, fallback, A, B);
+      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback, 
+          A, B, centerX, centerY, scaleX, scaleY);
 		} else if(method == "M") {
 			CorMControl corControl(Rcpp_corControl);
-			r = ccaPP(x, y, k, corControl, ppControl, true, fallback, A, B);
+      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback, 
+          A, B, centerX, centerY, scaleX, scaleY);
 		} else if(method == "pearson") {
 			CorPearsonControl corControl;
-			r = ccaPP(x, y, k, corControl, ppControl, false, false, A, B);
+      r = ccaPP(x, y, k, corControl, ppControl, standard, false, false, 
+          A, B, centerX, centerY, scaleX, scaleY);
 		} else {
 			error("method not available");
 		}
@@ -926,29 +983,38 @@ SEXP R_ccaPP(SEXP R_x, SEXP R_y, SEXP R_k, SEXP R_method, SEXP R_corControl,
 		// define control object for the correlations and call the arma version
 		if(method == "spearman") {
 			CorSpearmanControl corControl(Rcpp_corControl);
-			r = ccaPP(x, y, k, corControl, ppControl, true, fallback, A, B);
+      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback, 
+          A, B, centerX, centerY, scaleX, scaleY);
 		} else if(method == "kendall") {
 			CorKendallControl corControl(Rcpp_corControl);
-			r = ccaPP(x, y, k, corControl, ppControl, true, fallback, A, B);
+      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback, 
+          A, B, centerX, centerY, scaleX, scaleY);
 		} else if(method == "quadrant") {
 			CorQuadrantControl corControl(Rcpp_corControl);
-			r = ccaPP(x, y, k, corControl, ppControl, true, fallback, A, B);
+      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback, 
+          A, B, centerX, centerY, scaleX, scaleY);
 		} else if(method == "M") {
 			CorMControl corControl(Rcpp_corControl);
-			r = ccaPP(x, y, k, corControl, ppControl, true, fallback, A, B);
+      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback, 
+          A, B, centerX, centerY, scaleX, scaleY);
 		} else if(method == "pearson") {
 			CorPearsonControl corControl;
-			r = ccaPP(x, y, k, corControl, ppControl, false, false, A, B);
+      r = ccaPP(x, y, k, corControl, ppControl, standard, false, false, 
+          A, B, centerX, centerY, scaleX, scaleY);
 		} else {
 			error("method not available");
 		}
 	} else {
 		error("algorithm not available");
 	}
-	// wrap and return result
-	return List::create(
-			Named("cor") = r,
-			Named("A") = A,
-			Named("B") = B
-			);
+  // wrap and return result
+  return List::create(
+    Named("cor") = r,
+    Named("A") = A,
+    Named("B") = B,
+    Named("centerX") = centerX,
+    Named("centerY") = centerY,
+    Named("scaleX") = scaleX,
+    Named("scaleY") = scaleY
+    );
 }
