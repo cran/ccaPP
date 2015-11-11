@@ -1,11 +1,11 @@
 Package: ccaPP
 Type: Package
-Title: (Robust) canonical correlation analysis via projection pursuit
-Version: 0.3.0
-Date: 2013-11-01
-Depends: Rcpp (>= 0.9.10), parallel, pcaPP (>= 1.8-1), robustbase
-Imports: RcppArmadillo (>= 0.2.36)
-LinkingTo: Rcpp, RcppArmadillo
+Title: (Robust) Canonical Correlation Analysis via Projection Pursuit
+Version: 0.3.1
+Date: 2015-11-11
+Depends: R (>= 3.2.0), parallel, pcaPP (>= 1.8-1), robustbase
+Imports: Rcpp (>= 0.11.0)
+LinkingTo: Rcpp (>= 0.11.0), RcppArmadillo (>= 0.4.100.0)
 Suggests: mvtnorm
 Description: Canonical correlation analysis and maximum correlation via
     projection pursuit, as well as fast implementations of correlation
@@ -14,10 +14,10 @@ License: GPL (>= 2)
 LazyLoad: yes
 Authors@R: c(person("Andreas", "Alfons", email = "alfons@ese.eur.nl",
     role = c("aut", "cre")), person("David", "Simcha", role = "ctb"))
-Packaged: 2013-11-01 12:21:04 UTC; andreas
 Author: Andreas Alfons [aut, cre],
-  David Simcha [ctb]
+    David Simcha [ctb]
 Maintainer: Andreas Alfons <alfons@ese.eur.nl>
 NeedsCompilation: yes
+Packaged: 2015-11-11 16:29:41 UTC; andreas
 Repository: CRAN
-Date/Publication: 2013-11-01 17:35:25
+Date/Publication: 2015-11-11 18:03:52

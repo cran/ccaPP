@@ -25,8 +25,7 @@
 #' 
 #' @keywords multivariate robust
 #' 
-#' @import Rcpp
-#' @import RcppArmadillo
+#' @importFrom Rcpp evalCpp
 #' @useDynLib ccaPP
 #' @export
 

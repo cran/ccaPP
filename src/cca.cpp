@@ -780,7 +780,7 @@ mat standardize(const mat& x, const bool& robust,
       double med;
       scale(j) = mad(xj, med);  // compute median and MAD
       center(j) = med;
-			if((scale(j) == 0.0) && fallback) {
+			if((scale(j) == 0.0) && (fallback || isDummy(xj))) {
 				// compute mean and standard deviation
 				center(j) = mean(xj);
 				scale(j) = norm(xj - center(j), 2) / sqrt((double)(n-1));

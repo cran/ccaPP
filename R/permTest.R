@@ -3,10 +3,10 @@
 #         KU Leuven
 # ----------------------
 
-#' (Robust) permutation test for independence
+#' (Robust) permutation test for no association
 #' 
-#' Test for independence of two data sets, with a focus on robust and 
-#' nonparametric correlation measures.
+#' Test whether or not there is association betwenn two data sets, with a focus 
+#' on robust and nonparametric correlation measures.
 #' 
 #' The test generates \code{R} data sets by randomly permuting the observations 
 #' of \code{x}, while keeping the observations of \code{y} fixed.  In each 
@@ -51,16 +51,9 @@
 #' @seealso \code{\link{maxCorGrid}}, \code{\link{maxCorProj}}
 #' 
 #' @examples 
-#' ## generate data
-#' library("mvtnorm")
-#' set.seed(1234)  # for reproducibility
-#' p <- 3
-#' q <- 2
-#' m <- p + q
-#' sigma <- 0.5^t(sapply(1:m, function(i, j) abs(i-j), 1:m))
-#' xy <- rmvnorm(100, sigma=sigma)
-#' x <- xy[, 1:p]
-#' y <- xy[, (p+1):m]
+#' data("diabetes")
+#' x <- diabetes$x
+#' y <- diabetes$y
 #' 
 #' ## Spearman correlation
 #' permTest(x, y, R=100, method = "spearman")
@@ -71,6 +64,7 @@
 #' 
 #' @keywords multivariate robust
 #' 
+#' @importFrom stats runif
 #' @import parallel
 #' @export
 

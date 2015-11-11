@@ -116,16 +116,9 @@
 #' \code{\link{corFunctions}}
 #' 
 #' @examples 
-#' ## generate data
-#' library("mvtnorm")
-#' set.seed(1234)  # for reproducibility
-#' p <- 3
-#' q <- 2
-#' m <- p + q
-#' sigma <- 0.5^t(sapply(1:m, function(i, j) abs(i-j), 1:m))
-#' xy <- rmvnorm(100, sigma=sigma)
-#' x <- xy[, 1:p]
-#' y <- xy[, (p+1):m]
+#' data("diabetes")
+#' x <- diabetes$x
+#' y <- diabetes$y
 #' 
 #' ## Spearman correlation
 #' ccaGrid(x, y, method = "spearman")
@@ -135,8 +128,7 @@
 #' 
 #' @keywords multivariate robust
 #' 
-#' @import Rcpp
-#' @import RcppArmadillo
+#' @importFrom Rcpp evalCpp
 #' @import robustbase
 #' @useDynLib ccaPP
 #' @export
@@ -256,16 +248,9 @@ CCAgrid <- function(x, y, k = 1,
 #' \code{\link{corFunctions}}
 #' 
 #' @examples 
-#' ## generate data
-#' library("mvtnorm")
-#' set.seed(1234)  # for reproducibility
-#' p <- 3
-#' q <- 2
-#' m <- p + q
-#' sigma <- 0.5^t(sapply(1:m, function(i, j) abs(i-j), 1:m))
-#' xy <- rmvnorm(100, sigma=sigma)
-#' x <- xy[, 1:p]
-#' y <- xy[, (p+1):m]
+#' data("diabetes")
+#' x <- diabetes$x
+#' y <- diabetes$y
 #' 
 #' ## Spearman correlation
 #' ccaProj(x, y, method = "spearman")
@@ -275,8 +260,7 @@ CCAgrid <- function(x, y, k = 1,
 #' 
 #' @keywords multivariate robust
 #' 
-#' @import Rcpp
-#' @import RcppArmadillo
+#' @importFrom Rcpp evalCpp
 #' @import pcaPP
 #' @import robustbase
 #' @useDynLib ccaPP
@@ -340,6 +324,12 @@ ccaPP <- function(x, y, k = 1,
     A <- B <- matrix(numeric(), 0, 0)
     cca <- list(cor=NA, A=A, B=B)
   } else {
+    # check high-dimensional data
+    if(k > 1 && (n <= p+1 || n <= q+1)) {
+      k <- 1
+      warning("higher-order canonical correlations not yet implemented", 
+              "for high-dimensional data")
+    }
     # check method and get list of control arguments
     method <- match.arg(method)
     corControl <- getCorControl(method, corControl, forceConsistency)

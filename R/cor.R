@@ -50,14 +50,14 @@
 #' 
 #' @note 
 #' The Kendall correlation uses a naive \eqn{n^2} implementation if 
-#' \eqn{n < 30} and a fast \eqn{n \log(n)}{n log(n)} implementation for larger 
-#' values, where \eqn{n} denotes the number of observations.
+#' \eqn{n < 30} and a fast \eqn{O(n \log(n))}{O(n log(n))} implementation for 
+#' larger values, where \eqn{n} denotes the number of observations.
 #' 
 #' Functionality for removing observations with missing values is currently not 
 #' implemented.
 #' 
-#' @author Andreas Alfons, \eqn{n \log(n)}{n log(n)} implementation of the 
-#' Kendall correlation by David Simcha
+#' @author Andreas Alfons, \eqn{O(n \log(n))}{O(n log(n))} implementation of 
+#' the Kendall correlation by David Simcha
 #' 
 #' @seealso \code{\link{ccaGrid}}, \code{\link{ccaProj}}, 
 #' \code{\link[stats]{cor}}
@@ -93,8 +93,7 @@
 #' 
 #' @keywords multivariate robust
 #' 
-#' @import Rcpp
-#' @import RcppArmadillo
+#' @importFrom Rcpp evalCpp
 #' @useDynLib ccaPP
 
 NULL
