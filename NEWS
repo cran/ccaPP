@@ -1,3 +1,10 @@
+Changes in ccaPP version 0.3.2
+
+    + Added references for maxCorGrid() and permTest().
+    
+    + Added vignette 'ccaPP-intro'.
+
+
 Changes in ccaPP version 0.3.1
 
     + Added 'diabetes' data from Andrews & Herzberg (1985).

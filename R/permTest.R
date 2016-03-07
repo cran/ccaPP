@@ -50,17 +50,22 @@
 #' 
 #' @seealso \code{\link{maxCorGrid}}, \code{\link{maxCorProj}}
 #' 
+#' @references 
+#' A. Alfons, C. Croux and P. Filzmoser (2016) Robust maximum association 
+#' between data sets: The \R Package \pkg{ccaPP}.  \emph{Austrian Journal of 
+#' Statistics}, \bold{45}(1), 71--79.
+#' 
 #' @examples 
 #' data("diabetes")
 #' x <- diabetes$x
 #' y <- diabetes$y
 #' 
 #' ## Spearman correlation
-#' permTest(x, y, R=100, method = "spearman")
-#' permTest(x, y, R=100, method = "spearman", consistent = TRUE)
+#' permTest(x, y, R = 100, method = "spearman")
+#' permTest(x, y, R = 100, method = "spearman", consistent = TRUE)
 #' 
 #' ## Pearson correlation
-#' permTest(x, y, R=100, method = "pearson")
+#' permTest(x, y, R = 100, method = "pearson")
 #' 
 #' @keywords multivariate robust
 #' 
