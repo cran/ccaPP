@@ -4,29 +4,29 @@
 # ----------------------
 
 #' Fast implementation of the median
-#' 
+#'
 #' Compute the sample median with a fast C++ implementation.
-#' 
+#'
 #' @param x  a numeric vector.
-#' 
+#'
 #' @return The sample median.
-#' 
-#' @note Functionality for removing observations with missing values is 
+#'
+#' @note Functionality for removing observations with missing values is
 #' currently not implemented.
-#' 
+#'
 #' @author Andreas Alfons
-#' 
+#'
 #' @seealso \code{\link{fastMAD}}, \code{\link[stats]{median}}
-#' 
-#' @examples 
+#'
+#' @examples
 #' set.seed(1234)  # for reproducibility
 #' x <- rnorm(100)
 #' fastMedian(x)
-#' 
+#'
 #' @keywords multivariate robust
-#' 
+#'
 #' @importFrom Rcpp evalCpp
-#' @useDynLib ccaPP
+#' @useDynLib ccaPP, .registration = TRUE
 #' @export
 
 fastMedian <- function(x) {
