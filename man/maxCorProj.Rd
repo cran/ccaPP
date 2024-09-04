@@ -4,9 +4,16 @@
 \alias{maxCorProj}
 \title{(Robust) maximum correlation via projections through the data points}
 \usage{
-maxCorProj(x, y, method = c("spearman", "kendall", "quadrant", "M",
-  "pearson"), control = list(...), standardize = TRUE,
-  useL1Median = TRUE, fallback = FALSE, ...)
+maxCorProj(
+  x,
+  y,
+  method = c("spearman", "kendall", "quadrant", "M", "pearson"),
+  control = list(...),
+  standardize = TRUE,
+  useL1Median = TRUE,
+  fallback = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x, y}{each can be a numeric vector, matrix or data frame.}

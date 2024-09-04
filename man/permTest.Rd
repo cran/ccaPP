@@ -4,8 +4,17 @@
 \alias{permTest}
 \title{(Robust) permutation test for no association}
 \usage{
-permTest(x, y, R = 1000, fun = maxCorGrid, permutations = NULL,
-  nCores = 1, cl = NULL, seed = NULL, ...)
+permTest(
+  x,
+  y,
+  R = 1000,
+  fun = maxCorGrid,
+  permutations = NULL,
+  nCores = 1,
+  cl = NULL,
+  seed = NULL,
+  ...
+)
 }
 \arguments{
 \item{x, y}{each can be a numeric vector, matrix or data frame.}

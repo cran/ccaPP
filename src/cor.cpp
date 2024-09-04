@@ -252,7 +252,7 @@ double corM(const vec& x, const vec& y, const double& prob,
 	} else if(initial == "spearman") {
 		r = corSpearman(x, y, true);
 	} else {
-		error("method not available");	// should never happen
+		Rf_error("method not available");	// should never happen
 	}
 	if((1 - abs(r)) > tol) {
 		// covariance matrix would be singular otherwise

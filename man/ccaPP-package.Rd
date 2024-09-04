@@ -20,12 +20,12 @@ The DESCRIPTION file:
 Maintainer: \packageMaintainer{ccaPP}
 }
 \references{
-A. Alfons, C. Croux and P. Filzmoser (2016) Robust maximum association between 
-data sets: The \R Package \pkg{ccaPP}.  \emph{Austrian Journal of Statistics}, 
+A. Alfons, C. Croux and P. Filzmoser (2016) Robust maximum association between
+data sets: The \R Package \pkg{ccaPP}.  \emph{Austrian Journal of Statistics},
 \bold{45}(1), 71--79.
 
-A. Alfons, C. Croux and P. Filzmoser (2016) Robust maximum association 
-estimators.  \emph{Journal of the American Statistical Association}.  DOI 
-10.1080/01621459.2016.1148609.  In press.
+A. Alfons, C. Croux and P. Filzmoser (2016) Robust maximum association
+estimators.  \emph{Journal of the American Statistical Association},
+\bold{112}(517), 435--445.
 }
 \keyword{package}

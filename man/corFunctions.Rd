@@ -17,8 +17,13 @@ corKendall(x, y, consistent = FALSE)
 
 corQuadrant(x, y, consistent = FALSE)
 
-corM(x, y, prob = 0.9, initial = c("quadrant", "spearman", "kendall",
-  "pearson"), tol = 1e-06)
+corM(
+  x,
+  y,
+  prob = 0.9,
+  initial = c("quadrant", "spearman", "kendall", "pearson"),
+  tol = 1e-06
+)
 }
 \arguments{
 \item{x, y}{numeric vectors.}

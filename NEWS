@@ -1,6 +1,19 @@
+Changes in ccaPP version 0.3.4
+
+    + C++ code now uses Rf_error() instead of error() for error handling in
+      order to work properly if R_NO_REMAP is defined.
+
+    + DESCRIPTION file now includes links to GitHub pages and clarifies author
+      contributions.
+
+    + CITATION file now uses bibentry() instead of citEntry().
+
+    + Updated references in help files.
+
+
 Changes in ccaPP version 0.3.3
 
-    + C++ functions properly registered.
+    + C++ functions are now properly registered.
 
 
 Changes in ccaPP version 0.3.2

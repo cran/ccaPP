@@ -5,10 +5,21 @@
 \alias{print.maxCor}
 \title{(Robust) maximum correlation via alternating series of grid searches}
 \usage{
-maxCorGrid(x, y, method = c("spearman", "kendall", "quadrant", "M",
-  "pearson"), control = list(...), nIterations = 10, nAlternate = 10,
-  nGrid = 25, select = NULL, tol = 1e-06, standardize = TRUE,
-  fallback = FALSE, seed = NULL, ...)
+maxCorGrid(
+  x,
+  y,
+  method = c("spearman", "kendall", "quadrant", "M", "pearson"),
+  control = list(...),
+  nIterations = 10,
+  nAlternate = 10,
+  nGrid = 25,
+  select = NULL,
+  tol = 1e-06,
+  standardize = TRUE,
+  fallback = FALSE,
+  seed = NULL,
+  ...
+)
 }
 \arguments{
 \item{x, y}{each can be a numeric vector, matrix or data frame.}
@@ -132,8 +143,8 @@ between data sets: The \R Package \pkg{ccaPP}.  \emph{Austrian Journal of
 Statistics}, \bold{45}(1), 71--79.
 
 A. Alfons, C. Croux and P. Filzmoser (2016) Robust maximum association
-estimators.  \emph{Journal of the American Statistical Association}.  DOI
-10.1080/01621459.2016.1148609.  In press.
+estimators.  \emph{Journal of the American Statistical Association},
+\bold{112}(517), 435--445.
 }
 \seealso{
 \code{\link{maxCorProj}}, \code{\link{ccaGrid}},

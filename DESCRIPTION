@@ -1,8 +1,8 @@
 Package: ccaPP
 Type: Package
 Title: (Robust) Canonical Correlation Analysis via Projection Pursuit
-Version: 0.3.3
-Date: 2019-12-09
+Version: 0.3.4
+Date: 2024-09-04
 Depends: R (>= 3.2.0), parallel, pcaPP (>= 1.8-1), robustbase
 Imports: Rcpp (>= 0.11.0)
 LinkingTo: Rcpp (>= 0.11.0), RcppArmadillo (>= 0.4.100.0)
@@ -12,15 +12,23 @@ Description: Canonical correlation analysis and maximum correlation via
     projection pursuit, as well as fast implementations of correlation
     estimators, with a focus on robust and nonparametric methods.
 License: GPL (>= 2)
+URL: https://github.com/aalfons/ccaPP
+BugReports: https://github.com/aalfons/ccaPP/issues
 LazyLoad: yes
-Authors@R: c(person("Andreas", "Alfons", email = "alfons@ese.eur.nl",
-    role = c("aut", "cre")), person("David", "Simcha", role = "ctb"))
-Author: Andreas Alfons [aut, cre],
-  David Simcha [ctb]
+Authors@R: 
+    c(person("Andreas", "Alfons", 
+             email = "alfons@ese.eur.nl",
+             role = c("aut", "cre"),
+             comment = c(ORCID = "0000-0002-2513-3788")), 
+      person("David", "Simcha", 
+             role = "ctb", 
+             comment = "O(n log(n)) implementation of Kendall correlation"))
+Author: Andreas Alfons [aut, cre] (<https://orcid.org/0000-0002-2513-3788>),
+  David Simcha [ctb] (O(n log(n)) implementation of Kendall correlation)
 Maintainer: Andreas Alfons <alfons@ese.eur.nl>
 Encoding: UTF-8
-RoxygenNote: 6.1.1
+RoxygenNote: 7.3.2
 NeedsCompilation: yes
-Packaged: 2019-12-09 10:52:53 UTC; andreas
+Packaged: 2024-09-04 18:34:57 UTC; alfons
 Repository: CRAN
-Date/Publication: 2019-12-09 12:40:02 UTC
+Date/Publication: 2024-09-04 22:20:10 UTC

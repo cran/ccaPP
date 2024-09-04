@@ -203,7 +203,7 @@ SEXP R_fastCor(SEXP R_x, SEXP R_y, SEXP R_method, SEXP R_control) {
 		CorPearsonControl corControl;
 		r = fastCor(x, y, corControl);
 	} else {
-		error("method not available");
+		Rf_error("method not available");
 	}
 	// wrap and return result
 	return wrap(r);
@@ -785,7 +785,7 @@ mat standardize(const mat& x, const bool& robust,
 				center(j) = mean(xj);
 				scale(j) = norm(xj - center(j), 2) / sqrt((double)(n-1));
 			}
-			if(scale(j) == 0.0) error("zero scale");
+			if(scale(j) == 0.0) Rf_error("zero scale");
 			xs.col(j) = (xj - center(j)) / scale(j);	// standardize variable
 		}
 	} else {
@@ -797,7 +797,7 @@ mat standardize(const mat& x, const bool& robust,
 			center(j) = mean(xj);						// compute mean
 			xj -= center(j);									// sweep out mean
 			scale(j) = norm(xj, 2) / sqrt((double)(n-1));	// compute SD
-			if(scale(j) == 0.0) error("zero scale");
+			if(scale(j) == 0.0) Rf_error("zero scale");
 			xs.col(j) = xj / scale(j);						// sweep out SD
 		}
 	}
@@ -835,8 +835,8 @@ mat householder(const vec& a) {
 // B ............ matrix of canonical vectors for second matrix to be updated
 template <class CorControl, class PPControl>
 vec ccaPP(const mat& x, const mat& y, const uword& k, CorControl corControl,
-		PPControl ppControl, const bool& standard, const bool& robust, 
-    const bool& fallback, mat& A, mat& B, vec& centerX, vec& centerY, 
+		PPControl ppControl, const bool& standard, const bool& robust,
+    const bool& fallback, mat& A, mat& B, vec& centerX, vec& centerY,
     vec& scaleX, vec& scaleY) {
 	// initializations
 	uword p = x.n_cols, q = y.n_cols;
@@ -882,14 +882,14 @@ vec ccaPP(const mat& x, const mat& y, const uword& k, CorControl corControl,
     eig_sym(eigValX, eigVecX, SigmaX); eig_sym(eigValY, eigVecY, SigmaY);
     eigValX = sqrt(eigValX); eigValY = sqrt(eigValY);
     // orthogonalize the data
-    xl = xl * eigVecX; 
+    xl = xl * eigVecX;
     for(uword j = 0; j < p; j++) xl.col(j) /= eigValX(j);
     yl = yl * eigVecY;
     for(uword j = 0; j < q; j++) yl.col(j) /= eigValY(j);
     // transform first canonical vectors accordingly and divide by norm
     a = eigValX % (eigVecX.t() * a); a /= norm(a, 2);
     b = eigValY % (eigVecY.t() * b); b /= norm(b, 2);
-    // transform data to orthogonal subspaces and compute higher order 
+    // transform data to orthogonal subspaces and compute higher order
     // canonical correlations
     mat P, Q;   // for backtransformation
     for(uword l = 1; l < k; l++) {
@@ -918,7 +918,7 @@ vec ccaPP(const mat& x, const mat& y, const uword& k, CorControl corControl,
       // corresponding Householder matrices
       vec al = eigVecX * (P * join_cols(zeros<vec>(l), a) / eigValX);
       A.col(l) = al / norm(al, 2);
-      vec bl = eigVecY * (Q * join_cols(zeros<vec>(l), b) / eigValY); 
+      vec bl = eigVecY * (Q * join_cols(zeros<vec>(l), b) / eigValY);
       B.col(l) = bl / norm(bl, 2);
     }
   }
@@ -956,26 +956,26 @@ SEXP R_ccaPP(SEXP R_x, SEXP R_y, SEXP R_k, SEXP R_method, SEXP R_corControl,
 		// define control object for the correlations and call the arma version
 		if(method == "spearman") {
 			CorSpearmanControl corControl(Rcpp_corControl);
-      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback, 
+      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback,
           A, B, centerX, centerY, scaleX, scaleY);
 		} else if(method == "kendall") {
 			CorKendallControl corControl(Rcpp_corControl);
-      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback, 
+      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback,
           A, B, centerX, centerY, scaleX, scaleY);
 		} else if(method == "quadrant") {
 			CorQuadrantControl corControl(Rcpp_corControl);
-      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback, 
+      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback,
           A, B, centerX, centerY, scaleX, scaleY);
 		} else if(method == "M") {
 			CorMControl corControl(Rcpp_corControl);
-      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback, 
+      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback,
           A, B, centerX, centerY, scaleX, scaleY);
 		} else if(method == "pearson") {
 			CorPearsonControl corControl;
-      r = ccaPP(x, y, k, corControl, ppControl, standard, false, false, 
+      r = ccaPP(x, y, k, corControl, ppControl, standard, false, false,
           A, B, centerX, centerY, scaleX, scaleY);
 		} else {
-			error("method not available");
+			Rf_error("method not available");
 		}
 	} else if(algorithm == "proj") {
 		// define control object for projections through data points
@@ -983,29 +983,29 @@ SEXP R_ccaPP(SEXP R_x, SEXP R_y, SEXP R_k, SEXP R_method, SEXP R_corControl,
 		// define control object for the correlations and call the arma version
 		if(method == "spearman") {
 			CorSpearmanControl corControl(Rcpp_corControl);
-      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback, 
+      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback,
           A, B, centerX, centerY, scaleX, scaleY);
 		} else if(method == "kendall") {
 			CorKendallControl corControl(Rcpp_corControl);
-      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback, 
+      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback,
           A, B, centerX, centerY, scaleX, scaleY);
 		} else if(method == "quadrant") {
 			CorQuadrantControl corControl(Rcpp_corControl);
-      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback, 
+      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback,
           A, B, centerX, centerY, scaleX, scaleY);
 		} else if(method == "M") {
 			CorMControl corControl(Rcpp_corControl);
-      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback, 
+      r = ccaPP(x, y, k, corControl, ppControl, standard, true, fallback,
           A, B, centerX, centerY, scaleX, scaleY);
 		} else if(method == "pearson") {
 			CorPearsonControl corControl;
-      r = ccaPP(x, y, k, corControl, ppControl, standard, false, false, 
+      r = ccaPP(x, y, k, corControl, ppControl, standard, false, false,
           A, B, centerX, centerY, scaleX, scaleY);
 		} else {
-			error("method not available");
+			Rf_error("method not available");
 		}
 	} else {
-		error("algorithm not available");
+		Rf_error("algorithm not available");
 	}
   // wrap and return result
   return List::create(
