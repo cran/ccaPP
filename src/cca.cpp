@@ -445,8 +445,8 @@ void GridControl::gridSearch(const mat& x, const uvec& orderX, const vec& y,
 		}
 		// find grid point that maximizes correlation functional and keep
 		// maximum correlation of current grid search
-		uword whichMax;
-		double currentMaxCor = corY.max(whichMax);
+		uword whichMax = corY.index_max();
+		double currentMaxCor = corY(whichMax);
 		// update maximum correlation and weighting vector
 		// if 0 degree angle is not part of the grid, the maximum correlation
 		// of the current grid search may be smaller than the previous maximum
