@@ -3,7 +3,6 @@
  *         Erasmus University Rotterdam
  */
 
-#include <R.h>
 #include "utils.h"
 
 using namespace Rcpp;

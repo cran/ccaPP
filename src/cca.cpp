@@ -3,7 +3,6 @@
  *         Erasmus University Rotterdam
  */
 
-#include <R.h>
 #include "cca.h"
 
 using namespace Rcpp;
@@ -203,7 +202,7 @@ SEXP R_fastCor(SEXP R_x, SEXP R_y, SEXP R_method, SEXP R_control) {
 		CorPearsonControl corControl;
 		r = fastCor(x, y, corControl);
 	} else {
-		Rf_error("method not available");
+		(Rf_error)("method not available");  // should never happen
 	}
 	// wrap and return result
 	return wrap(r);
@@ -785,7 +784,7 @@ mat standardize(const mat& x, const bool& robust,
 				center(j) = mean(xj);
 				scale(j) = norm(xj - center(j), 2) / sqrt((double)(n-1));
 			}
-			if(scale(j) == 0.0) Rf_error("zero scale");
+			if(scale(j) == 0.0) (Rf_error)("zero scale");
 			xs.col(j) = (xj - center(j)) / scale(j);	// standardize variable
 		}
 	} else {
@@ -797,7 +796,7 @@ mat standardize(const mat& x, const bool& robust,
 			center(j) = mean(xj);						// compute mean
 			xj -= center(j);									// sweep out mean
 			scale(j) = norm(xj, 2) / sqrt((double)(n-1));	// compute SD
-			if(scale(j) == 0.0) Rf_error("zero scale");
+			if(scale(j) == 0.0) (Rf_error)("zero scale");
 			xs.col(j) = xj / scale(j);						// sweep out SD
 		}
 	}
@@ -975,7 +974,7 @@ SEXP R_ccaPP(SEXP R_x, SEXP R_y, SEXP R_k, SEXP R_method, SEXP R_corControl,
       r = ccaPP(x, y, k, corControl, ppControl, standard, false, false,
           A, B, centerX, centerY, scaleX, scaleY);
 		} else {
-			Rf_error("method not available");
+			(Rf_error)("method not available");  // should never happen
 		}
 	} else if(algorithm == "proj") {
 		// define control object for projections through data points
@@ -1002,10 +1001,10 @@ SEXP R_ccaPP(SEXP R_x, SEXP R_y, SEXP R_k, SEXP R_method, SEXP R_corControl,
       r = ccaPP(x, y, k, corControl, ppControl, standard, false, false,
           A, B, centerX, centerY, scaleX, scaleY);
 		} else {
-			Rf_error("method not available");
+			(Rf_error)("method not available");  // should never happen
 		}
 	} else {
-		Rf_error("algorithm not available");
+		(Rf_error)("algorithm not available");  // should never happen
 	}
   // wrap and return result
   return List::create(

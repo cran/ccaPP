@@ -1,8 +1,8 @@
 Package: ccaPP
 Type: Package
 Title: (Robust) Canonical Correlation Analysis via Projection Pursuit
-Version: 0.3.5
-Date: 2025-10-02
+Version: 0.3.6
+Date: 2026-07-09
 Depends: R (>= 3.2.0), parallel, pcaPP (>= 1.8-1), robustbase
 Imports: Rcpp (>= 0.11.0)
 LinkingTo: Rcpp (>= 0.11.0), RcppArmadillo (>= 0.7.200.1.0)
@@ -30,6 +30,6 @@ Maintainer: Andreas Alfons <alfons@ese.eur.nl>
 Encoding: UTF-8
 RoxygenNote: 7.3.3
 NeedsCompilation: yes
-Packaged: 2025-10-02 06:05:47 UTC; alfons
+Packaged: 2026-07-09 14:23:23 UTC; alfons
 Repository: CRAN
-Date/Publication: 2025-10-02 06:50:10 UTC
+Date/Publication: 2026-07-09 17:10:02 UTC
